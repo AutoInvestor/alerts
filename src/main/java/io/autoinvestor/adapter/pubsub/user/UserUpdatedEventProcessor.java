@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 class UserUpdatedEventProcessor {
 
-    public void process(UserCreatedEvent event) {
+    public void process(UserUpdatedEvent event) {
         log.info("UserUpdatedEvent processed: {}", event);
     }
 }
