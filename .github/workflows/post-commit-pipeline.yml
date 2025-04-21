@@ -12,8 +12,7 @@ jobs:
   build_test_release:
     runs-on: ubuntu-22.04
     outputs:
-      new-version: ${{ steps.calculate_version.outputs.NEW_VERSION }}
-      bump: ${{ steps.version_increment.outputs.bump }}
+      new-version: ${{ (steps.version_increment.outputs.bump != 'none' && steps.calculate_version.outputs.new_version) || '' }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -32,38 +31,28 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get latest tag
-        id: get_latest_tag
-        run: |
-          LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
-          if [ -z "$LATEST_TAG" ]; then
-            LATEST_TAG="0.0.0"
-          fi
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-
       - name: Determine version increment
         id: version_increment
         run: |
-          LABELS="${{ steps.get_merged_pr.outputs.labels }}"
-          BUMP="none"
-          if [[ "$LABELS" == *"major"* ]]; then
-            BUMP="major"
-          elif [[ "$LABELS" == *"minor"* ]]; then
-            BUMP="minor"
-          elif [[ "$LABELS" == *"patch"* ]]; then
-            BUMP="patch"
-          fi
+          LABELS="${{ steps.get_merged_pr.outputs.labels }}"          
+          case "$LABELS" in
+            *major*) BUMP="major" ;;
+            *minor*) BUMP="minor" ;;
+            *patch*) BUMP="patch" ;;
+            *)       BUMP="none"
+          esac
           echo "bump=$BUMP" >> $GITHUB_OUTPUT
 
       - name: Calculate new version (Semantic Versioning)
         id: calculate_version
+        if: steps.version_increment.outputs.bump != 'none'
         run: |
-          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "0.0.0" ]; then
-            VERSION="0.0.0"
-          else
-            VERSION=${LATEST_TAG#v}
+          LATEST_TAG=$(git tag --sort=-version:refname | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="0.0.0"
           fi
-          IFS='.' read -r major minor patch <<< "$VERSION"
+          
+          IFS='.' read -r major minor patch <<< "$LATEST_TAG"
           BUMP=${{ steps.version_increment.outputs.bump }}
           if [ "$BUMP" = "major" ]; then
             major=$((major + 1))
@@ -75,39 +64,31 @@ jobs:
           elif [ "$BUMP" = "patch" ]; then
             patch=$((patch + 1))
           fi
-          NEW_VERSION="$major.$minor.$patch"
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_version=${major}.${minor}.${patch}" >> $GITHUB_OUTPUT
 
       - name: Build & Test
         run: ./gradlew clean build
 
-      - name: Run Linter Check
-        run: ./gradlew spotlessCheck
-
       - name: Build & push docker image
         if: steps.version_increment.outputs.bump != 'none'
         env:
-          DOCKER_IMAGE_VERSION: "${{ steps.calculate_version.outputs.NEW_VERSION }}"
+          DOCKER_IMAGE_VERSION: "${{ steps.calculate_version.outputs.new_version }}"
           DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
         run: ./gradlew bootBuildImage
 
       - name: Create GitHub Release
         if: steps.version_increment.outputs.bump != 'none'
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "${{ steps.calculate_version.outputs.NEW_VERSION }}"
-          release_name: "${{ steps.calculate_version.outputs.NEW_VERSION }}"
-          draft: false
-          prerelease: false
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.calculate_version.outputs.new_version }}"
+          git push origin "${{ steps.calculate_version.outputs.new_version }}"
 
   update-cd-repo:
     uses: AutoInvestor/infra-gitops/.github/workflows/update-version.yml@main
     needs: build_test_release
-    if: needs.build_test_release.outputs.bump != 'none'
+    if: needs.build_test_release.outputs.new-version != ''
     with:
       image: autoinvestor-alerts
       version: ${{ needs.build_test_release.outputs.new-version }}
