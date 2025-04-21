@@ -43,11 +43,8 @@ class UserEventPubSubInboundAdapter {
     }
 
     @ServiceActivator(inputChannel = PUBSUB_CHANNEL)
-    public void messageReceiver(
-            UserEvent<?> payload,
-            @Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message
-    ) {
-        log.info("Received message (ID: {}) from {}: {}", message.getPubsubMessage().getMessageId(), PUBSUB_CHANNEL, payload);
+    public void messageReceiver(UserEvent<?> payload) {
+        log.info("Received message from {}: {}", PUBSUB_CHANNEL, payload);
 
         switch (payload.type()) {
             case "USER_CREATED" -> userCreatedEventProcessor.process((UserCreatedEvent) payload);
