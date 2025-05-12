@@ -69,16 +69,6 @@ jobs:
       - name: Build & Test
         run: ./gradlew clean build
 
-      - name: Build & push docker image (legacy)
-        if: steps.version_increment.outputs.bump != 'none'
-        env:
-          DOCKER_REGISTRY: "https://index.docker.io/v1/"
-          DOCKER_NAMESPACE: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKER_IMAGE_VERSION: "${{ steps.calculate_version.outputs.new_version }}"
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: ./gradlew bootBuildImage
-
       - name: Build & push docker image
         if: steps.version_increment.outputs.bump != 'none'
         env:
