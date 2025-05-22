@@ -37,13 +37,5 @@ tasks.named('test') {
 }
 
 bootBuildImage {
-	imageName = "${System.getenv("DOCKER_NAMESPACE")}/autoinvestor-${rootProject.name}:${System.getenv("DOCKER_IMAGE_VERSION")}"
-	docker {
-		publishRegistry {
-			username = System.getenv("DOCKER_USERNAME")
-			password = System.getenv("DOCKER_PASSWORD")
-			url = System.getenv("DOCKER_REGISTRY")
-		}
-	}
-	publish = true
+	publish = false
 }
