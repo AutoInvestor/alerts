@@ -6,6 +6,7 @@ on:
       - main
 
 permissions:
+  id-token: write
   contents: write
 
 jobs:
@@ -69,15 +70,24 @@ jobs:
       - name: Build & Test
         run: ./gradlew clean build
 
+      - name: GCP Auth
+        if: steps.version_increment.outputs.bump != 'none'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.BUILDER_SA_EMAIL }}
+
       - name: Build & push docker image
         if: steps.version_increment.outputs.bump != 'none'
         env:
-          DOCKER_REGISTRY: ${{ vars.DOCKER_ARTIFACT_REGISTRY }}
-          DOCKER_NAMESPACE: ${{ vars.DOCKER_ARTIFACT_NAMESPACE }}
-          DOCKER_IMAGE_VERSION: "${{ steps.calculate_version.outputs.new_version }}"
-          DOCKER_USERNAME: _json_key
-          DOCKER_PASSWORD: ${{ secrets.GCP_SA_KEY }}
-        run: ./gradlew bootBuildImage
+          DOCKER_IMAGE_NAME: "${{ vars.DOCKER_ARTIFACT_NAMESPACE }}/autoinvestor-alerts:${{ steps.calculate_version.outputs.new_version }}"
+        run: |
+          echo -e "\033[32mBuilding docker image\033[0m"
+          ./gradlew bootBuildImage --imageName="${DOCKER_IMAGE_NAME}"
+          echo -e "\033[32mConfiguring docker registry\033[0m"
+          gcloud auth configure-docker "${{ vars.DOCKER_ARTIFACT_REGISTRY }}" --quiet
+          echo -e "\033[32mPushing image\033[0m"
+          docker push "${DOCKER_IMAGE_NAME}"
 
       - name: Create GitHub Release
         if: steps.version_increment.outputs.bump != 'none'
