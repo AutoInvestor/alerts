@@ -42,7 +42,7 @@ public class MongoEventStoreRepository implements EventStoreRepository {
     public Optional<Inbox> get(InboxId inboxId) {
         Query q = Query.query(
                         Criteria.where("aggregateId")
-                                .is(inboxId.toString())
+                                .is(inboxId.value())
                 )
                 .with(Sort.by("version"));
 
@@ -67,7 +67,7 @@ public class MongoEventStoreRepository implements EventStoreRepository {
     public boolean exists(InboxId inboxId) {
         Query q = Query.query(
                         Criteria.where("aggregateId")
-                                .is(inboxId.toString())
+                                .is(inboxId.value())
                 );
 
         return template.exists(q, EventDocument.class, COLLECTION);
