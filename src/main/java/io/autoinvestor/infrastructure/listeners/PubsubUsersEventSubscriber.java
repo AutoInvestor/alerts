@@ -76,6 +76,12 @@ public class PubsubUsersEventSubscriber {
             log.info("Processing event type={} msgId={}", event.getType(), msgId);
 
             if ("USER_CREATED".equals(event.getType())) {
+                if (event.getAggregateId() == null || !event.getPayload().containsKey("riskLevel")) {
+                    log.warn("Malformed event: Skipping USER_CREATED event with missing aggregateId or riskLevel msgId={}", msgId);
+                    consumer.ack();
+                    return;
+                }
+
                 RegisterUserCommand cmd = new RegisterUserCommand(
                         event.getAggregateId(),
                         (int) event.getPayload().get("riskLevel")

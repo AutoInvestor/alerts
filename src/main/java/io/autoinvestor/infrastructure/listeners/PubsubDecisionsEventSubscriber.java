@@ -76,6 +76,13 @@ public class PubsubDecisionsEventSubscriber {
             log.info("Processing event type={} msgId={}", event.getType(), msgId);
 
             if ("ASSET_DECISION_TAKEN".equals(event.getType())) {
+                if (event.getAggregateId() == null || event.getPayload() == null ||
+                        !event.getPayload().containsKey("assetId") || !event.getPayload().containsKey("decision") ||
+                        !event.getPayload().containsKey("riskLevel")) {
+                    log.warn("Malformed event: Skipping ASSET_DECISION_TAKEN event with missing fields msgId={}", msgId);
+                    consumer.ack();
+                    return;
+                }
                 EmitAlertsCommand cmd = new EmitAlertsCommand(
                         (String) event.getPayload().get("assetId"),
                         (String) event.getPayload().get("decision"),
