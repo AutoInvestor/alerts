@@ -72,6 +72,9 @@ public class Inbox extends EventSourcedEntity {
     }
 
     private void whenInboxCreated(InboxCreatedEvent event) {
+        if (this.state == null) {
+            this.state = InboxState.empty();
+        }
         this.state = this.state.withInboxCreated(event);
     }
 
