@@ -21,15 +21,15 @@ public class MongoInboxReadModelRepository implements InboxReadModelRepository {
 
     @Override
     public void save(UserId userId, io.autoinvestor.domain.model.InboxId inboxId) {
-        String userIdStr = userId.toString();
-        String inboxIdStr = inboxId.toString();
+        String userIdStr = userId.value();
+        String inboxIdStr = inboxId.value();
         DecisionDocument doc = new DecisionDocument(userIdStr, inboxIdStr);
         template.save(doc);
     }
 
     @Override
     public Optional<InboxId> getInboxId(UserId userId) {
-        String userIdStr = userId.toString();
+        String userIdStr = userId.value();
         DecisionDocument doc = template.findById(userIdStr, DecisionDocument.class);
         if (doc == null) {
             return Optional.empty();

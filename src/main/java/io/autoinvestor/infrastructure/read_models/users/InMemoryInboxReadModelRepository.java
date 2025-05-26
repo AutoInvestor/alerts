@@ -23,12 +23,12 @@ public class InMemoryInboxReadModelRepository implements InboxReadModelRepositor
 
     @Override
     public void save(UserId userId, InboxId inboxId) {
-        inbox.put(userId.toString(), inboxId.toString());
+        inbox.put(userId.value(), inboxId.value());
     }
 
     @Override
     public Optional<InboxId> getInboxId(UserId userId) {
-        String raw = inbox.get(userId.toString());
+        String raw = inbox.get(userId.value());
         return raw != null
                 ? Optional.of(InboxId.from(raw))
                 : Optional.empty();

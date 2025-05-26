@@ -24,7 +24,7 @@ final class EventMessageMapper {
         try {
             Map<String, Object> envelope = new HashMap<>();
             envelope.put("payload",     event.getPayload().asMap());
-            envelope.put("eventId",     event.getId().toString());
+            envelope.put("eventId",     event.getId().value());
             envelope.put("type",        event.getType());
             envelope.put("aggregateId", event.getAggregateId().value());
             envelope.put("occurredAt",

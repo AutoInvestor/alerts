@@ -27,7 +27,7 @@ public class InMemoryEventStoreRepository implements EventStoreRepository {
     @Override
     public Optional<Inbox> get(InboxId inboxId) {
         List<Event<?>> events = eventStore.stream()
-                .filter(e -> e.getAggregateId().toString().equals(inboxId.toString()))
+                .filter(e -> e.getAggregateId().value().equals(inboxId.value()))
                 .sorted(Comparator.comparingLong(Event::getVersion))
                 .collect(Collectors.toList());
 
@@ -41,6 +41,6 @@ public class InMemoryEventStoreRepository implements EventStoreRepository {
     @Override
     public boolean exists(InboxId inboxId) {
         return eventStore.stream()
-                .anyMatch(e -> e.getAggregateId().toString().equals(inboxId.toString()));
+                .anyMatch(e -> e.getAggregateId().value().equals(inboxId.value()));
     }
 }
