@@ -77,6 +77,13 @@ public class PubsubPortfolioAssetEventSubscriber {
             log.info("Processing event type={} msgId={}", event.getType(), msgId);
 
             if ("PORTFOLIO_ASSET_ADDED".equals(event.getType())) {
+                if (event.getAggregateId() == null || event.getPayload() == null ||
+                        !event.getPayload().containsKey("userId") || !event.getPayload().containsKey("assetId")) {
+                    log.warn("Malformed event: Skipping PORTFOLIO_ASSET_ADDED event with missing fields msgId={}", msgId);
+                    consumer.ack();
+                    return;
+                }
+
                 RegisterPortfolioAssetCommand cmd = new RegisterPortfolioAssetCommand(
                         (String) event.getPayload().get("userId"),
                         (String) event.getPayload().get("assetId")
