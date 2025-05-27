@@ -4,10 +4,7 @@ import io.autoinvestor.application.GetDecisionsQuery;
 import io.autoinvestor.application.GetAlertsQueryHandler;
 import io.autoinvestor.application.GetAlertsQueryResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,8 +19,7 @@ public class GetAlertsController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GetAlertsDTO>> getAlerts(
-            @RequestParam String userId) {
+    public ResponseEntity<List<GetAlertsDTO>> getAlerts(@RequestHeader(value = "X-User-Id") String userId) {
 
         List<GetAlertsQueryResponse> queryResponse = this.handler.handle(
                 new GetDecisionsQuery(userId)
