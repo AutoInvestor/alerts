@@ -11,9 +11,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class PubsubEventMapper {
-
-    private final ObjectMapper mapper =
-            new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    private final ObjectMapper mapper;
 
     public PubsubEvent fromMap(Map<String, ?> raw) {
         return mapper.convertValue(raw, PubsubEvent.class);
