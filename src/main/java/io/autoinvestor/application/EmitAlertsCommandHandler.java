@@ -39,11 +39,15 @@ public class EmitAlertsCommandHandler {
         List<UserId> usersId = this.portfolioRepository.getUsersIdByAssetAndRiskLevel(command.assetId(), command.riskLevel());
 
         for (UserId userId : usersId) {
-            InboxId inboxId = this.inboxReadModel.getInboxId(userId)
-                .orElseThrow(() -> new InternalErrorException("Inbox not found for userId " + userId.value()));
+            Optional<InboxId> inboxIdOpt = this.inboxReadModel.getInboxId(userId);
+            if (inboxIdOpt.isEmpty()) {
+                log.warn("Inbox not found for userId {}", userId.value());
+                continue;
+            }
+
+            InboxId inboxId = inboxIdOpt.get();
 
             Optional<Inbox> userOpt = this.eventStore.get(inboxId);
-
             if (userOpt.isEmpty()) {
                 log.warn("User with ID {} not found in event store", userId);
                 continue;
