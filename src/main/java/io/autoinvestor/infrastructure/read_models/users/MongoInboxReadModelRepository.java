@@ -20,7 +20,7 @@ public class MongoInboxReadModelRepository implements InboxReadModelRepository {
     }
 
     @Override
-    public void save(UserId userId, io.autoinvestor.domain.model.InboxId inboxId) {
+    public void save(UserId userId, InboxId inboxId) {
         String userIdStr = userId.value();
         String inboxIdStr = inboxId.value();
         DecisionDocument doc = new DecisionDocument(userIdStr, inboxIdStr);
