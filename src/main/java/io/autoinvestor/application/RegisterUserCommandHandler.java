@@ -43,6 +43,8 @@ public class RegisterUserCommandHandler {
 
         this.portfolioRepository.addUser(command.userId(), command.riskLevel());
 
+        this.inboxReadModel.save(UserId.from(command.userId()), inbox.getState().getInboxId());
+
         this.eventPublisher.publish(events);
 
         inbox.markEventsAsCommitted();
