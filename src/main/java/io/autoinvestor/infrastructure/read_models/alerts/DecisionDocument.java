@@ -13,7 +13,6 @@ import java.util.Date;
 @Getter
 @Document(collection = "alerts")
 public class DecisionDocument {
-    @Id
     private String userId;
     private String assetId;
     private String type;
