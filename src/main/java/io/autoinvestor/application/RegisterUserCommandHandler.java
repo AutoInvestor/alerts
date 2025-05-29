@@ -5,14 +5,14 @@ import io.autoinvestor.domain.events.Event;
 import io.autoinvestor.domain.events.EventPublisher;
 import io.autoinvestor.domain.events.EventStoreRepository;
 import io.autoinvestor.domain.model.Inbox;
-import io.autoinvestor.domain.model.InboxId;
 import io.autoinvestor.domain.model.UserId;
-import io.autoinvestor.exceptions.InternalErrorException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 
+@Slf4j
 @Service
 public class RegisterUserCommandHandler {
 
@@ -32,7 +32,8 @@ public class RegisterUserCommandHandler {
     public void handle(RegisterUserCommand command) {
         UserId userId = UserId.from(command.userId());
         if (this.inboxReadModel.getInboxId(userId).isPresent()) {
-            throw new UserAlreadyExists("User already exists with ID: " + command.userId());
+            log.warn("Inbox already exists for userId {}", command.userId());
+            return;
         }
 
         Inbox inbox = Inbox.create(command.userId(), command.riskLevel());
