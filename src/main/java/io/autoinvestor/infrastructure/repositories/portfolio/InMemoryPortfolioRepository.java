@@ -2,12 +2,13 @@ package io.autoinvestor.infrastructure.repositories.portfolio;
 
 import io.autoinvestor.domain.PortfolioRepository;
 import io.autoinvestor.domain.model.UserId;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @Profile("local")

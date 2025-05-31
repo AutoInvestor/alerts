@@ -1,49 +1,69 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.4'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'io.freefair.lombok' version '8.13.1'
+    id 'java'
+    id 'org.springframework.boot' version '3.4.4'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.freefair.lombok' version '8.13.1'
+    id 'com.diffplug.spotless' version '7.0.4'
 }
 
 group = 'io.autoinvestor'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	implementation 'com.google.cloud:google-cloud-pubsub:1.123.0'
-	implementation "com.google.cloud:spring-cloud-gcp-starter-pubsub:6.1.1"
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
-	implementation 'org.springframework.integration:spring-integration-core'
-	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'com.google.cloud:google-cloud-pubsub:1.123.0'
+    implementation "com.google.cloud:spring-cloud-gcp-starter-pubsub:6.1.1"
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.integration:spring-integration-core'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
-	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-	testImplementation 'org.testcontainers:testcontainers'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:gcloud'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:gcloud'
 
-	compileOnly         'org.projectlombok:lombok:1.18.38'
-	annotationProcessor 'org.projectlombok:lombok:1.18.38'
+    compileOnly         'org.projectlombok:lombok:1.18.38'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
 
-	testCompileOnly         'org.projectlombok:lombok:1.18.38'
-	testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
+    testCompileOnly         'org.projectlombok:lombok:1.18.38'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 bootBuildImage {
-	publish = false
+    publish = false
+}
+
+spotless {
+    java {
+        googleJavaFormat('1.22.0').aosp()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        leadingTabsToSpaces()
+        endWithNewline()
+        importOrder '', 'java', 'javax', 'org', 'com'
+        target 'src/**/*.java'
+    }
+
+    format 'misc', {
+        target '*.gradle', '*.md', '.gitignore'
+        leadingTabsToSpaces()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }

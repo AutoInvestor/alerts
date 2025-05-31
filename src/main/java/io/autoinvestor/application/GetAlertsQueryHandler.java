@@ -1,9 +1,9 @@
 package io.autoinvestor.application;
 
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class GetAlertsQueryHandler {
@@ -18,11 +18,7 @@ public class GetAlertsQueryHandler {
         List<AlertDTO> decisions = this.readModel.get(query.userId());
 
         return decisions.stream()
-                .map(d -> new GetAlertsQueryResponse(
-                        d.assetId(),
-                        d.type(),
-                        d.date()
-                ))
+                .map(d -> new GetAlertsQueryResponse(d.assetId(), d.type(), d.date()))
                 .collect(Collectors.toList());
     }
 }

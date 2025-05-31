@@ -7,10 +7,10 @@ import io.autoinvestor.domain.events.EventStoreRepository;
 import io.autoinvestor.domain.model.Inbox;
 import io.autoinvestor.domain.model.UserId;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -21,8 +21,11 @@ public class RegisterUserCommandHandler {
     private final InboxReadModelRepository inboxReadModel;
     private final EventPublisher eventPublisher;
 
-    public RegisterUserCommandHandler(EventStoreRepository eventStore, PortfolioRepository portfolioRepository,
-                                      InboxReadModelRepository inboxReadModel, EventPublisher eventPublisher) {
+    public RegisterUserCommandHandler(
+            EventStoreRepository eventStore,
+            PortfolioRepository portfolioRepository,
+            InboxReadModelRepository inboxReadModel,
+            EventPublisher eventPublisher) {
         this.eventStore = eventStore;
         this.portfolioRepository = portfolioRepository;
         this.inboxReadModel = inboxReadModel;

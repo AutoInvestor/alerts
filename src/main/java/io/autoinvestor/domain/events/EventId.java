@@ -1,6 +1,5 @@
 package io.autoinvestor.domain.events;
 
-
 import io.autoinvestor.domain.Id;
 
 public class EventId extends Id {

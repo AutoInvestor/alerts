@@ -2,17 +2,14 @@ package io.autoinvestor.infrastructure.read_models.alerts;
 
 import io.autoinvestor.application.AlertDTO;
 import io.autoinvestor.application.AlertsReadModelRepository;
-import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.index.Index;
-import org.springframework.data.mongodb.core.index.IndexOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @Profile("prod")
@@ -35,11 +32,8 @@ public class MongoAlertsReadModelRepository implements AlertsReadModelRepository
 
     @Override
     public List<AlertDTO> get(String userId) {
-        Query query = Query.query(
-                Criteria.where("userId").is(userId)
-        );
-        return template.find(query, DecisionDocument.class, COLLECTION)
-                .stream()
+        Query query = Query.query(Criteria.where("userId").is(userId));
+        return template.find(query, DecisionDocument.class, COLLECTION).stream()
                 .map(mapper::toDTO)
                 .toList();
     }

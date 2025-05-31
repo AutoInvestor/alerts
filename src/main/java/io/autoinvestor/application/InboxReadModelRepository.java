@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface InboxReadModelRepository {
     void save(UserId userId, InboxId inboxId);
+
     Optional<InboxId> getInboxId(UserId userId);
 }

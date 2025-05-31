@@ -7,13 +7,12 @@ import io.autoinvestor.domain.events.EventStoreRepository;
 import io.autoinvestor.domain.model.Inbox;
 import io.autoinvestor.domain.model.InboxId;
 import io.autoinvestor.domain.model.UserId;
-import io.autoinvestor.exceptions.InternalErrorException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -24,8 +23,11 @@ public class RegisterPortfolioAssetCommandHandler {
     private final InboxReadModelRepository inboxReadModel;
     private final EventPublisher eventPublisher;
 
-    public RegisterPortfolioAssetCommandHandler(EventStoreRepository eventStore, PortfolioRepository portfolioRepository,
-                                                InboxReadModelRepository inboxReadModel, EventPublisher eventPublisher) {
+    public RegisterPortfolioAssetCommandHandler(
+            EventStoreRepository eventStore,
+            PortfolioRepository portfolioRepository,
+            InboxReadModelRepository inboxReadModel,
+            EventPublisher eventPublisher) {
         this.eventStore = eventStore;
         this.portfolioRepository = portfolioRepository;
         this.inboxReadModel = inboxReadModel;
@@ -34,7 +36,8 @@ public class RegisterPortfolioAssetCommandHandler {
 
     public void handle(RegisterPortfolioAssetCommand command) {
         if (this.portfolioRepository.existsPortfolioAsset(command.userId(), command.assetId())) {
-            log.info("Asset {} already registered for user {}", command.assetId(), command.userId());
+            log.info(
+                    "Asset {} already registered for user {}", command.assetId(), command.userId());
             return;
         }
 
