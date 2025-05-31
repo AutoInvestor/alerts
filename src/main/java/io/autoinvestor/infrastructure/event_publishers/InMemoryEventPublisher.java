@@ -2,12 +2,13 @@ package io.autoinvestor.infrastructure.event_publishers;
 
 import io.autoinvestor.domain.events.Event;
 import io.autoinvestor.domain.events.EventPublisher;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 @Component
 @Profile("local")
@@ -28,6 +29,9 @@ public class InMemoryEventPublisher implements EventPublisher {
 
     public boolean hasPublishedEvent(String type, String aggregateId) {
         return publishedEvents.stream()
-                .anyMatch(event -> event.getType().equals(type) && event.getAggregateId().value().equals(aggregateId));
+                .anyMatch(
+                        event ->
+                                event.getType().equals(type)
+                                        && event.getAggregateId().value().equals(aggregateId));
     }
 }

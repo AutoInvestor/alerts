@@ -29,29 +29,24 @@ public class Inbox extends EventSourcedEntity {
     public static Inbox create(String userId, int riskLevel) {
         Inbox inbox = Inbox.empty();
 
-        inbox.apply(InboxCreatedEvent.with(
-                inbox.getState().getInboxId(),
-                UserId.from(userId),
-                riskLevel
-        ));
+        inbox.apply(
+                InboxCreatedEvent.with(
+                        inbox.getState().getInboxId(), UserId.from(userId), riskLevel));
 
         return inbox;
     }
 
     public void addPortfolioAsset(String assetId) {
-        this.apply(SubscriptionCreatedEvent.with(
-                this.state.getInboxId(),
-                AssetId.of(assetId)
-        ));
+        this.apply(SubscriptionCreatedEvent.with(this.state.getInboxId(), AssetId.of(assetId)));
     }
 
     public void emitAlert(String assetId, String decision) {
-        this.apply(AlertEmittedEvent.with(
-                this.state.getInboxId(),
-                this.state.getUserId(),
-                AssetId.of(assetId),
-                Decision.from(decision)
-        ));
+        this.apply(
+                AlertEmittedEvent.with(
+                        this.state.getInboxId(),
+                        this.state.getUserId(),
+                        AssetId.of(assetId),
+                        Decision.from(decision)));
     }
 
     @Override

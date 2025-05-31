@@ -1,4 +1,3 @@
 package io.autoinvestor.application;
 
-public record RegisterPortfolioAssetCommand(String userId, String assetId) {
-}
+public record RegisterPortfolioAssetCommand(String userId, String assetId) {}

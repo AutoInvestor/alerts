@@ -3,11 +3,12 @@ package io.autoinvestor.infrastructure.read_models.users;
 import io.autoinvestor.application.InboxReadModelRepository;
 import io.autoinvestor.domain.model.InboxId;
 import io.autoinvestor.domain.model.UserId;
+
+import java.util.Optional;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 @Profile("prod")

@@ -27,7 +27,8 @@ public abstract class Event<P extends EventPayload> {
         this.version = version;
     }
 
-    protected Event(EventId id, Id aggregateId, String type, P payload, Date occurredAt, int version) {
+    protected Event(
+            EventId id, Id aggregateId, String type, P payload, Date occurredAt, int version) {
         this.id = id;
         this.aggregateId = aggregateId;
         this.type = type;

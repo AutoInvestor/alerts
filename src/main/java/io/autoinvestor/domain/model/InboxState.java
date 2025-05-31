@@ -15,7 +15,12 @@ public class InboxState {
     private final Set<AssetId> portfolioAssets;
     private final List<Alert> alerts;
 
-    private InboxState(InboxId inboxId, UserId userId, int riskLevel, Set<AssetId> portfolioAssets, List<Alert> alerts) {
+    private InboxState(
+            InboxId inboxId,
+            UserId userId,
+            int riskLevel,
+            Set<AssetId> portfolioAssets,
+            List<Alert> alerts) {
         this.inboxId = inboxId;
         this.userId = userId;
         this.riskLevel = riskLevel;
@@ -37,8 +42,7 @@ public class InboxState {
                 UserId.from(event.getPayload().userId()),
                 event.getPayload().riskLevel(),
                 Set.of(),
-                List.of()
-        );
+                List.of());
     }
 
     public InboxState withSubscriptionCreated(SubscriptionCreatedEvent event) {
@@ -47,29 +51,19 @@ public class InboxState {
         updatedAssets.add(AssetId.of(assetId));
 
         return new InboxState(
-                this.inboxId,
-                this.userId,
-                this.riskLevel,
-                updatedAssets,
-                this.alerts
-        );
+                this.inboxId, this.userId, this.riskLevel, updatedAssets, this.alerts);
     }
 
     public InboxState withAlertEmitted(AlertEmittedEvent event) {
-        Alert alert = new Alert(
-                AssetId.of(event.getPayload().assetId()),
-                Decision.from(event.getPayload().decision()),
-                event.getOccurredAt()
-        );
+        Alert alert =
+                new Alert(
+                        AssetId.of(event.getPayload().assetId()),
+                        Decision.from(event.getPayload().decision()),
+                        event.getOccurredAt());
         List<Alert> updatedAlerts = new ArrayList<>(this.alerts);
         updatedAlerts.add(alert);
 
         return new InboxState(
-                this.inboxId,
-                this.userId,
-                this.riskLevel,
-                this.portfolioAssets,
-                updatedAlerts
-        );
+                this.inboxId, this.userId, this.riskLevel, this.portfolioAssets, updatedAlerts);
     }
 }

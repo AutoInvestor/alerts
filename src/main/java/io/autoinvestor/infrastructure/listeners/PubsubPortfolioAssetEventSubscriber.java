@@ -1,5 +1,17 @@
 package io.autoinvestor.infrastructure.listeners;
 
+import io.autoinvestor.application.RegisterPortfolioAssetCommand;
+import io.autoinvestor.application.RegisterPortfolioAssetCommandHandler;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiService.Listener;
@@ -9,17 +21,6 @@ import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PubsubMessage;
-import io.autoinvestor.application.RegisterPortfolioAssetCommand;
-import io.autoinvestor.application.RegisterPortfolioAssetCommandHandler;
-import io.autoinvestor.application.RegisterUserCommand;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -38,8 +39,8 @@ public class PubsubPortfolioAssetEventSubscriber {
             PubsubEventMapper eventMapper,
             @Value("${GCP_PROJECT}") String projectId,
             @Value("${PUBSUB_SUBSCRIPTION_PORTFOLIO}") String subscriptionId) {
-        this.commandHandler   = commandHandler;
-        this.eventMapper      = eventMapper;
+        this.commandHandler = commandHandler;
+        this.eventMapper = eventMapper;
         this.subscriptionName = ProjectSubscriptionName.of(projectId, subscriptionId);
     }
 
@@ -50,11 +51,18 @@ public class PubsubPortfolioAssetEventSubscriber {
         MessageReceiver receiver = this::processMessage;
 
         this.subscriber = Subscriber.newBuilder(subscriptionName, receiver).build();
-        this.subscriber.addListener(new Listener() {
-            @Override public void failed(State from, Throwable failure) {
-                log.error("Subscriber failed from state {}: {}", from, failure.toString(), failure); // ERROR
-            }
-        }, Runnable::run);
+        this.subscriber.addListener(
+                new Listener() {
+                    @Override
+                    public void failed(State from, Throwable failure) {
+                        log.error(
+                                "Subscriber failed from state {}: {}",
+                                from,
+                                failure.toString(),
+                                failure); // ERROR
+                    }
+                },
+                Runnable::run);
         this.subscriber.startAsync().awaitRunning();
         log.info("Subscriber running");
     }
@@ -72,25 +80,34 @@ public class PubsubPortfolioAssetEventSubscriber {
         log.debug("Received message msgId={} size={}B", msgId, message.getData().size());
 
         try {
-            Map<String,Object> raw = objectMapper.readValue(message.getData().toByteArray(), new TypeReference<>() {});
+            Map<String, Object> raw =
+                    objectMapper.readValue(
+                            message.getData().toByteArray(), new TypeReference<>() {});
             PubsubEvent event = eventMapper.fromMap(raw);
             log.info("Processing event type={} msgId={}", event.getType(), msgId);
 
             if ("PORTFOLIO_ASSET_ADDED".equals(event.getType())) {
-                if (event.getAggregateId() == null || event.getPayload() == null ||
-                        !event.getPayload().containsKey("userId") || !event.getPayload().containsKey("assetId")) {
-                    log.warn("Malformed event: Skipping PORTFOLIO_ASSET_ADDED event with missing fields msgId={}", msgId);
+                if (event.getAggregateId() == null
+                        || event.getPayload() == null
+                        || !event.getPayload().containsKey("userId")
+                        || !event.getPayload().containsKey("assetId")) {
+                    log.warn(
+                            "Malformed event: Skipping PORTFOLIO_ASSET_ADDED event with missing fields msgId={}",
+                            msgId);
                     consumer.ack();
                     return;
                 }
 
-                RegisterPortfolioAssetCommand cmd = new RegisterPortfolioAssetCommand(
-                        (String) event.getPayload().get("userId"),
-                        (String) event.getPayload().get("assetId")
-                );
+                RegisterPortfolioAssetCommand cmd =
+                        new RegisterPortfolioAssetCommand(
+                                (String) event.getPayload().get("userId"),
+                                (String) event.getPayload().get("assetId"));
                 this.commandHandler.handle(cmd);
-                log.info("Decision registered for userId={} assetId={} msgId={}",
-                        cmd.userId(), cmd.assetId(), msgId);
+                log.info(
+                        "Decision registered for userId={} assetId={} msgId={}",
+                        cmd.userId(),
+                        cmd.assetId(),
+                        msgId);
             } else {
                 log.debug("Ignored unsupported event type={} msgId={}", event.getType(), msgId);
             }

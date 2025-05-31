@@ -20,10 +20,8 @@ public abstract class Id {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Id that))
-            return false;
+        if (this == o) return true;
+        if (!(o instanceof Id that)) return false;
         return id.equals(that.id);
     }
 

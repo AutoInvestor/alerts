@@ -3,12 +3,13 @@ package io.autoinvestor.infrastructure.read_models.users;
 import io.autoinvestor.application.InboxReadModelRepository;
 import io.autoinvestor.domain.model.InboxId;
 import io.autoinvestor.domain.model.UserId;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @Profile("local")
@@ -29,8 +30,6 @@ public class InMemoryInboxReadModelRepository implements InboxReadModelRepositor
     @Override
     public Optional<InboxId> getInboxId(UserId userId) {
         String raw = inbox.get(userId.value());
-        return raw != null
-                ? Optional.of(InboxId.from(raw))
-                : Optional.empty();
+        return raw != null ? Optional.of(InboxId.from(raw)) : Optional.empty();
     }
 }

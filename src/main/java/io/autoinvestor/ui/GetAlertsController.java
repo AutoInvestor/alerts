@@ -1,12 +1,13 @@
 package io.autoinvestor.ui;
 
-import io.autoinvestor.application.GetDecisionsQuery;
 import io.autoinvestor.application.GetAlertsQueryHandler;
 import io.autoinvestor.application.GetAlertsQueryResponse;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import io.autoinvestor.application.GetDecisionsQuery;
 
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/alerts")
@@ -19,19 +20,16 @@ public class GetAlertsController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GetAlertsDTO>> getAlerts(@RequestHeader(value = "X-User-Id") String userId) {
+    public ResponseEntity<List<GetAlertsDTO>> getAlerts(
+            @RequestHeader(value = "X-User-Id") String userId) {
 
-        List<GetAlertsQueryResponse> queryResponse = this.handler.handle(
-                new GetDecisionsQuery(userId)
-        );
+        List<GetAlertsQueryResponse> queryResponse =
+                this.handler.handle(new GetDecisionsQuery(userId));
 
-        List<GetAlertsDTO> dto = queryResponse.stream()
-                .map(d -> new GetAlertsDTO(
-                        d.assetId(),
-                        d.type(),
-                        d.date()
-                ))
-                .toList();
+        List<GetAlertsDTO> dto =
+                queryResponse.stream()
+                        .map(d -> new GetAlertsDTO(d.assetId(), d.type(), d.date()))
+                        .toList();
 
         return ResponseEntity.ok(dto);
     }

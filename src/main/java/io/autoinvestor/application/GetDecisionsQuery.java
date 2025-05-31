@@ -1,3 +1,3 @@
 package io.autoinvestor.application;
 
-public record GetDecisionsQuery(String userId) { }
+public record GetDecisionsQuery(String userId) {}
