@@ -35,15 +35,15 @@ public class PubsubPortfolioAssetEventSubscriber extends AbstractPubsubEventSubs
 
     @Override
     protected void handleEvent(PubsubEvent event, String msgId, AckReplyConsumer consumer) {
-        Map<String, Object> payload = event.getPayload();
+        log.debug(
+                "Received PORTFOLIO_ASSET_ADDED event msgId={} payloadKeys={}",
+                msgId,
+                event.getPayload().keySet());
 
-        if (event.getAggregateId() == null
-                || payload == null
-                || !payload.containsKey("userId")
-                || !payload.containsKey("assetId")) {
+        Map<String, Object> payload = event.getPayload();
+        if (payload == null || !payload.containsKey("userId") || !payload.containsKey("assetId")) {
             log.warn(
-                    "Malformed event: Skipping PORTFOLIO_ASSET_ADDED "
-                            + "event with missing fields msgId={}",
+                    "Malformed PORTFOLIO_ASSET_ADDED event (missing userId or assetId). Skipping msgId={}",
                     msgId);
             consumer.ack();
             return;
@@ -52,13 +52,23 @@ public class PubsubPortfolioAssetEventSubscriber extends AbstractPubsubEventSubs
         RegisterPortfolioAssetCommand cmd =
                 new RegisterPortfolioAssetCommand(
                         (String) payload.get("userId"), (String) payload.get("assetId"));
-        this.commandHandler.handle(cmd);
-
-        log.info(
-                "Portfolio asset registered for userId={} assetId={} msgId={}",
-                cmd.userId(),
-                cmd.assetId(),
-                msgId);
-        consumer.ack();
+        try {
+            this.commandHandler.handle(cmd);
+            log.info(
+                    "Handled PORTFOLIO_ASSET_ADDED: userId={} assetId={} msgId={}",
+                    cmd.userId(),
+                    cmd.assetId(),
+                    msgId);
+            consumer.ack();
+        } catch (Exception ex) {
+            log.error(
+                    "Error while handling PORTFOLIO_ASSET_ADDED for userId={} assetId={}, msgId={}: {}",
+                    cmd.userId(),
+                    cmd.assetId(),
+                    msgId,
+                    ex.getMessage(),
+                    ex);
+            consumer.nack();
+        }
     }
 }

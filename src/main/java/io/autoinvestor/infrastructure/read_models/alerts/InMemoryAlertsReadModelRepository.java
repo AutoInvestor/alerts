@@ -46,4 +46,8 @@ public class InMemoryAlertsReadModelRepository implements AlertsReadModelReposit
                 .filter(alert -> alert.userId().equals(userId))
                 .collect(Collectors.toList());
     }
+
+    public void clear() {
+        alerts.clear();
+    }
 }

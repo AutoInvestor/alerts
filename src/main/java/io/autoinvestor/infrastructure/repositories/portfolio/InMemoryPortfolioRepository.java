@@ -48,4 +48,9 @@ public class InMemoryPortfolioRepository implements PortfolioRepository {
                 .map(set -> set.contains(assetId))
                 .orElse(false);
     }
+
+    public void clear() {
+        users.clear();
+        portfolio.clear();
+    }
 }

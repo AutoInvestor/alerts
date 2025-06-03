@@ -32,4 +32,8 @@ public class InMemoryInboxReadModelRepository implements InboxReadModelRepositor
         String raw = inbox.get(userId.value());
         return raw != null ? Optional.of(InboxId.from(raw)) : Optional.empty();
     }
+
+    public void clear() {
+        inbox.clear();
+    }
 }

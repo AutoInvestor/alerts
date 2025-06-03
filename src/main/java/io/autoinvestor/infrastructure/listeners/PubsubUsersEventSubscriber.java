@@ -35,11 +35,17 @@ public class PubsubUsersEventSubscriber extends AbstractPubsubEventSubscriber {
 
     @Override
     protected void handleEvent(PubsubEvent event, String msgId, AckReplyConsumer consumer) {
-        Map<String, Object> payload = event.getPayload();
+        log.debug(
+                "Received USER_CREATED event msgId={} aggregateId={}",
+                msgId,
+                event.getAggregateId());
 
-        if (event.getAggregateId() == null || !payload.containsKey("riskLevel")) {
+        Map<String, Object> payload = event.getPayload();
+        if (event.getAggregateId() == null
+                || payload == null
+                || !payload.containsKey("riskLevel")) {
             log.warn(
-                    "Malformed event: Skipping USER_CREATED event with missing aggregateId or riskLevel msgId={}",
+                    "Malformed USER_CREATED event (missing aggregateId or riskLevel). Skipping msgId={}",
                     msgId);
             consumer.ack();
             return;
@@ -47,13 +53,23 @@ public class PubsubUsersEventSubscriber extends AbstractPubsubEventSubscriber {
 
         RegisterUserCommand cmd =
                 new RegisterUserCommand(event.getAggregateId(), (int) payload.get("riskLevel"));
-        this.commandHandler.handle(cmd);
-
-        log.info(
-                "User registered userId={} riskLevel={} msgId={}",
-                cmd.userId(),
-                cmd.riskLevel(),
-                msgId);
-        consumer.ack();
+        try {
+            this.commandHandler.handle(cmd);
+            log.info(
+                    "Handled USER_CREATED: userId={} riskLevel={} msgId={}",
+                    cmd.userId(),
+                    cmd.riskLevel(),
+                    msgId);
+            consumer.ack();
+        } catch (Exception ex) {
+            log.error(
+                    "Error while handling USER_CREATED for userId={} riskLevel={}, msgId={}: {}",
+                    cmd.userId(),
+                    cmd.riskLevel(),
+                    msgId,
+                    ex.getMessage(),
+                    ex);
+            consumer.nack();
+        }
     }
 }
