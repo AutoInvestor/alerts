@@ -2,6 +2,7 @@ package io.autoinvestor.infrastructure.read_models.alerts;
 
 import io.autoinvestor.application.AlertDTO;
 import io.autoinvestor.application.AlertsReadModelRepository;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Profile("prod")
+@Slf4j
 public class MongoAlertsReadModelRepository implements AlertsReadModelRepository {
 
     private static final String COLLECTION = "alerts";
@@ -23,11 +25,23 @@ public class MongoAlertsReadModelRepository implements AlertsReadModelRepository
     public MongoAlertsReadModelRepository(MongoTemplate template, DecisionMapper mapper) {
         this.template = template;
         this.mapper = mapper;
+        log.info("MongoAlertsReadModelRepository initialized.");
     }
 
     @Override
     public void save(AlertDTO alertDTO) {
-        template.save(mapper.toDocument(alertDTO), COLLECTION);
+        try {
+            template.save(mapper.toDocument(alertDTO), COLLECTION);
+            log.info("Saved AlertDTO for userId={}", alertDTO.userId());
+        } catch (Exception ex) {
+            log.error(
+                    "Failed to save AlertDTO[userId={}, assetId={}]: {}",
+                    alertDTO.userId(),
+                    alertDTO.assetId(),
+                    ex.getMessage(),
+                    ex);
+            throw ex;
+        }
     }
 
     @Override

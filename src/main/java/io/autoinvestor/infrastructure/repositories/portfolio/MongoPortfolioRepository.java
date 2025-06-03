@@ -6,6 +6,7 @@ import io.autoinvestor.domain.PortfolioRepository;
 import io.autoinvestor.domain.model.UserId;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Profile("prod")
+@Slf4j
 public class MongoPortfolioRepository implements PortfolioRepository {
     public static final String PORTFOLIO_COLLECTION = "portfolio";
     public static final String USERS_COLLECTION = "users";
@@ -28,6 +30,7 @@ public class MongoPortfolioRepository implements PortfolioRepository {
 
     public MongoPortfolioRepository(MongoTemplate template) {
         this.template = template;
+        log.info("MongoPortfolioRepository initialized.");
     }
 
     @Override
@@ -43,9 +46,22 @@ public class MongoPortfolioRepository implements PortfolioRepository {
         AggregationResults<IdProjection> results =
                 template.aggregate(agg, PORTFOLIO_COLLECTION, IdProjection.class);
 
-        return results.getMappedResults().stream()
-                .map(p -> UserId.from(p.getUserId()))
-                .collect(Collectors.toList());
+        List<IdProjection> raw = results.getMappedResults();
+
+        if (raw.isEmpty()) {
+            log.warn("No users found for assetId='{}' with riskLevel={}", assetId, riskLevel);
+            return List.of();
+        }
+
+        List<UserId> userIds =
+                raw.stream().map(p -> UserId.from(p.getUserId())).collect(Collectors.toList());
+
+        log.info(
+                "Found {} user(s) for assetId='{}', riskLevel={}",
+                userIds.size(),
+                assetId,
+                riskLevel);
+        return userIds;
     }
 
     @Setter
@@ -56,12 +72,34 @@ public class MongoPortfolioRepository implements PortfolioRepository {
 
     @Override
     public void addUser(String userId, int riskLevel) {
-        template.save(new UserDocument(null, userId, riskLevel));
+        try {
+            template.save(new UserDocument(null, userId, riskLevel));
+            log.info("Saved UserDocument[userId={}]", userId);
+        } catch (Exception ex) {
+            log.error(
+                    "Failed to save UserDocument[userId={}, riskLevel={}]: {}",
+                    userId,
+                    riskLevel,
+                    ex.getMessage(),
+                    ex);
+            throw ex;
+        }
     }
 
     @Override
     public void addPortfolioAsset(String userId, String assetId) {
-        template.save(new PortfolioDocument(null, userId, assetId));
+        try {
+            template.save(new PortfolioDocument(null, userId, assetId));
+            log.info("Saved PortfolioDocument[userId={}, assetId={}]", userId, assetId);
+        } catch (Exception ex) {
+            log.error(
+                    "Failed to save PortfolioDocument[userId={}, assetId={}]: {}",
+                    userId,
+                    assetId,
+                    ex.getMessage(),
+                    ex);
+            throw ex;
+        }
     }
 
     @Override

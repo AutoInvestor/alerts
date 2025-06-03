@@ -13,8 +13,7 @@ jobs:
   build_test_release:
     runs-on: ubuntu-22.04
     env:
-      SPRING_PROFILES_ACTIVE: prod
-      BP_SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: local
     outputs:
       new-version: ${{ (steps.version_increment.outputs.bump != 'none' && steps.calculate_version.outputs.new_version) || '' }}
     steps:
