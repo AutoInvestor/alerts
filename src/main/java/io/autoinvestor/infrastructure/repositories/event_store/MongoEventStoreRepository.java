@@ -43,8 +43,7 @@ public class MongoEventStoreRepository implements EventStoreRepository {
         }
 
         try {
-            List<EventDocument> docs =
-                    uncommitted.stream().map(mapper::toDocument).collect(Collectors.toList());
+            List<EventDocument> docs = uncommitted.stream().map(mapper::toDocument).toList();
             template.insertAll(docs);
             log.info("Inserted {} event(s) into '{}'", docs.size(), COLLECTION);
         } catch (Exception ex) {
