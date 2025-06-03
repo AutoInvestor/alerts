@@ -2,9 +2,6 @@ package io.autoinvestor.infrastructure.read_models.alerts;
 
 import io.autoinvestor.application.AlertDTO;
 import io.autoinvestor.application.AlertsReadModelRepository;
-
-import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
