@@ -4,11 +4,12 @@ import io.autoinvestor.domain.events.Event;
 import io.autoinvestor.domain.events.EventStoreRepository;
 import io.autoinvestor.domain.model.Inbox;
 import io.autoinvestor.domain.model.InboxId;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort;
@@ -82,6 +83,7 @@ public class MongoEventStoreRepository implements EventStoreRepository {
         }
 
         List<Event<?>> events = docs.stream().map(mapper::toDomain).collect(Collectors.toList());
+
         if (events.isEmpty()) {
             log.warn(
                     "Mapped {} EventDocument(s) but got 0 domain events for inboxId={}",

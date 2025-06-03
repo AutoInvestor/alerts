@@ -35,18 +35,13 @@ public class PubsubDecisionsEventSubscriber extends AbstractPubsubEventSubscribe
 
     @Override
     protected void handleEvent(PubsubEvent event, String msgId, AckReplyConsumer consumer) {
-        log.debug(
-                "Received ASSET_DECISION_TAKEN event msgId={} payloadKeys={}",
-                msgId,
-                event.getPayload().keySet());
-
         Map<String, Object> payload = event.getPayload();
-        if (payload == null
-                || !payload.containsKey("assetId")
+
+        if (!payload.containsKey("assetId")
                 || !payload.containsKey("decision")
                 || !payload.containsKey("riskLevel")) {
             log.warn(
-                    "Malformed ASSET_DECISION_TAKEN event (missing assetId/decision/riskLevel). Skipping msgId={}",
+                    "Malformed event: Event payload missing required fields (assetId, decision, riskLevel). Ignoring event msgId={}",
                     msgId);
             consumer.ack();
             return;
@@ -57,26 +52,14 @@ public class PubsubDecisionsEventSubscriber extends AbstractPubsubEventSubscribe
                         (String) payload.get("assetId"),
                         (String) payload.get("decision"),
                         (int) payload.get("riskLevel"));
+        this.commandHandler.handle(cmd);
 
-        try {
-            this.commandHandler.handle(cmd);
-            log.info(
-                    "Handled ASSET_DECISION_TAKEN: assetId={} decision={} riskLevel={} msgId={}",
-                    cmd.assetId(),
-                    cmd.decision(),
-                    cmd.riskLevel(),
-                    msgId);
-            consumer.ack();
-        } catch (Exception ex) {
-            log.error(
-                    "Error while handling ASSET_DECISION_TAKEN for assetId={} decision={} riskLevel={}, msgId={}: {}",
-                    cmd.assetId(),
-                    cmd.decision(),
-                    cmd.riskLevel(),
-                    msgId,
-                    ex.getMessage(),
-                    ex);
-            consumer.nack();
-        }
+        log.info(
+                "Decision registered for asset={} decision={} riskLevel={} msgId={}",
+                cmd.assetId(),
+                cmd.decision(),
+                cmd.riskLevel(),
+                msgId);
+        consumer.ack();
     }
 }

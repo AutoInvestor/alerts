@@ -2,6 +2,9 @@ package io.autoinvestor.infrastructure.read_models.alerts;
 
 import io.autoinvestor.application.AlertDTO;
 import io.autoinvestor.application.AlertsReadModelRepository;
+
+import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -47,20 +50,8 @@ public class MongoAlertsReadModelRepository implements AlertsReadModelRepository
     @Override
     public List<AlertDTO> get(String userId) {
         Query query = Query.query(Criteria.where("userId").is(userId));
-        List<AlertDTO> dtos;
-        try {
-            dtos =
-                    template.find(query, DecisionDocument.class, COLLECTION).stream()
-                            .map(mapper::toDTO)
-                            .toList();
-        } catch (Exception ex) {
-            log.error("Error retrieving alerts for userId={}: {}", userId, ex.getMessage(), ex);
-            throw ex;
-        }
-
-        if (dtos.isEmpty()) {
-            log.warn("No alerts found for userId={}", userId);
-        }
-        return dtos;
+        return template.find(query, DecisionDocument.class, COLLECTION).stream()
+                .map(mapper::toDTO)
+                .toList();
     }
 }

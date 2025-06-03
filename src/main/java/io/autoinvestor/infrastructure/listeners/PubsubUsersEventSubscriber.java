@@ -35,17 +35,11 @@ public class PubsubUsersEventSubscriber extends AbstractPubsubEventSubscriber {
 
     @Override
     protected void handleEvent(PubsubEvent event, String msgId, AckReplyConsumer consumer) {
-        log.debug(
-                "Received USER_CREATED event msgId={} aggregateId={}",
-                msgId,
-                event.getAggregateId());
-
         Map<String, Object> payload = event.getPayload();
-        if (event.getAggregateId() == null
-                || payload == null
-                || !payload.containsKey("riskLevel")) {
+
+        if (event.getAggregateId() == null || !payload.containsKey("riskLevel")) {
             log.warn(
-                    "Malformed USER_CREATED event (missing aggregateId or riskLevel). Skipping msgId={}",
+                    "Malformed event: Skipping USER_CREATED event with missing aggregateId or riskLevel msgId={}",
                     msgId);
             consumer.ack();
             return;
@@ -53,23 +47,13 @@ public class PubsubUsersEventSubscriber extends AbstractPubsubEventSubscriber {
 
         RegisterUserCommand cmd =
                 new RegisterUserCommand(event.getAggregateId(), (int) payload.get("riskLevel"));
-        try {
-            this.commandHandler.handle(cmd);
-            log.info(
-                    "Handled USER_CREATED: userId={} riskLevel={} msgId={}",
-                    cmd.userId(),
-                    cmd.riskLevel(),
-                    msgId);
-            consumer.ack();
-        } catch (Exception ex) {
-            log.error(
-                    "Error while handling USER_CREATED for userId={} riskLevel={}, msgId={}: {}",
-                    cmd.userId(),
-                    cmd.riskLevel(),
-                    msgId,
-                    ex.getMessage(),
-                    ex);
-            consumer.nack();
-        }
+        this.commandHandler.handle(cmd);
+
+        log.info(
+                "User registered userId={} riskLevel={} msgId={}",
+                cmd.userId(),
+                cmd.riskLevel(),
+                msgId);
+        consumer.ack();
     }
 }

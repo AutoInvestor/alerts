@@ -43,8 +43,6 @@ public class MongoPortfolioRepository implements PortfolioRepository {
                         match(Criteria.where("userDocs.riskLevel").is(riskLevel)),
                         project("userId"));
 
-        log.debug("Aggregation pipeline for assetId={}, riskLevel={}: {}", assetId, riskLevel, agg);
-
         AggregationResults<IdProjection> results =
                 template.aggregate(agg, PORTFOLIO_COLLECTION, IdProjection.class);
 
@@ -106,22 +104,8 @@ public class MongoPortfolioRepository implements PortfolioRepository {
 
     @Override
     public boolean existsPortfolioAsset(String userId, String assetId) {
-        try {
-            boolean exists =
-                    template.exists(
-                            Query.query(
-                                    Criteria.where("userId").is(userId).and("assetId").is(assetId)),
-                            PortfolioDocument.class);
-            log.debug("existsPortfolioAsset(userId={}, assetId={}) = {}", userId, assetId, exists);
-            return exists;
-        } catch (Exception ex) {
-            log.error(
-                    "Error checking existence of PortfolioDocument[userId={}, assetId={}]: {}",
-                    userId,
-                    assetId,
-                    ex.getMessage(),
-                    ex);
-            throw ex;
-        }
+        return template.exists(
+                Query.query(Criteria.where("userId").is(userId).and("assetId").is(assetId)),
+                PortfolioDocument.class);
     }
 }
